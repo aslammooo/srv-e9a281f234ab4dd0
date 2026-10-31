@@ -1,0 +1,27 @@
+name: run-service
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: run-service
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install
+        run: |
+          if [ -f "requirements.txt" ]; then pip install -r "requirements.txt"; fi
+      - name: Run
+        run: |
+          timeout 20100 bash -c 'while true; do python3 -u "notifier.py"; echo "restart in 5s"; sleep 5; done'
